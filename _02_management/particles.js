@@ -1,5 +1,5 @@
 //dependencies
-import { lerp, degToRad, polarToCartesian } from "./lib.js";
+import { lerp, TWO_PI, polarToCartesian } from "./lib.js";
 
 //settings
 const numParticles = 250;
@@ -28,7 +28,7 @@ function setupParticles(canvas) {
 }
 
 function getParticle({ width, height }) {
-    const angle = lerp(0, degToRad(360), Math.random());
+    const angle = lerp(0, TWO_PI, Math.random());
     const speed = lerp(minSpeed, maxSpeed, Math.random());
     const { x: vx, y: vy } = polarToCartesian({ a: angle, v: speed });
     const { x, y } = emitter;
@@ -69,7 +69,7 @@ export function draw(ctx) {
         ctx.globalAlpha = opacity;
         ctx.fillStyle = color;
         ctx.beginPath();
-        ctx.arc(x, y, r, 0, Math.PI*2);
+        ctx.arc(x, y, r, 0, TWO_PI);
         ctx.fill();
     }
     ctx.restore();
