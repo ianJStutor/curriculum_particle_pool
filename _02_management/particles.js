@@ -12,45 +12,53 @@ const opacity = 1;
 const minLife = 75;
 const maxLife = 125;
 const color = "white";
+const respawn = false;
 
 //state
 const particles = [];
 const emitter = { x: undefined, y: undefined };
 
 //setup
-function setupParticles(canvas) {
-    const { width, height } = canvas;
-    emitter.x = width/2;
-    emitter.y = height/2;
+function setupParticles() {
     for (let i=0; i<numParticles; i++) {
-        particles[i] = getParticle(canvas);
+        particles[i] = getParticle();
     }
 }
 
-function getParticle({ width, height }) {
+function getParticle() {
     const angle = lerp(0, TWO_PI, Math.random());
     const speed = lerp(minSpeed, maxSpeed, Math.random());
     const { x: vx, y: vy } = polarToCartesian({ a: angle, v: speed });
     const { x, y } = emitter;
-    return {
-        r: lerp(minRadius, maxRadius, Math.random()),
-        x, y, vx, vy, opacity, color,
-        life: Math.round(lerp(minLife, maxLife, Math.random()))
-    };
+    const r = lerp(minRadius, maxRadius, Math.random());
+    const life = Math.round(lerp(minLife, maxLife, Math.random()));
+    return { x, y, vx, vy, r, opacity, color, life };
 }
 
 export function setEmitter({ x, y }) {
     emitter.x = x;
     emitter.y = y;
+    setupParticles();
 }
 
 //loop functions
-export function update(canvas) {
+export function update({ width, height }) {
     //setup needed?
-    if (!particles.length) return setupParticles(canvas);
+    if (!particles.length) {
+        const { x, y } = emitter;
+        if (!x || !y) {
+            setEmitter( width/2, height/2 );
+        }
+        return;
+    }
     //update particles
     for (let i=0; i<particles.length; i++) {
         let p = particles[i];
+        //needs respawning?
+        if (p.life <= 0) {
+            if (respawn) particles[i] = getParticle(canvas);
+            else continue;
+        }
         //move and accelerate, change opacity, life
         p.x += p.vx;
         p.y += p.vy;
@@ -58,14 +66,14 @@ export function update(canvas) {
         p.vy *= acceleration;
         p.opacity *= acceleration;
         p.life--;
-        //needs respawning?
-        if (p.life <= 0) particles[i] = getParticle(canvas);
     }
 }
 
 export function draw(ctx) {
     ctx.save();
-    for (let { x, y, r, opacity, color } of particles) {
+    for (let { x, y, r, opacity, color, life } of particles) {
+        //is no longer live?
+        if (life <= 0) continue;
         ctx.globalAlpha = opacity;
         ctx.fillStyle = color;
         ctx.beginPath();
