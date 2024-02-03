@@ -43,21 +43,13 @@ export function setEmitter({ x, y }) {
 
 //loop functions
 export function update({ width, height }) {
-    //setup needed?
-    if (!particles.length) {
-        const { x, y } = emitter;
-        if (!x || !y) {
-            setEmitter( width/2, height/2 );
-        }
-        return;
-    }
     //update particles
     for (let i=0; i<particles.length; i++) {
         let p = particles[i];
         //needs respawning?
         if (p.life <= 0) {
-            if (respawn) particles[i] = getParticle(canvas);
-            else continue;
+            if (respawn) particles[i] = getParticle();
+            continue;
         }
         //move and accelerate, change opacity, life
         p.x += p.vx;
@@ -74,6 +66,7 @@ export function draw(ctx) {
     for (let { x, y, r, opacity, color, life } of particles) {
         //is no longer live?
         if (life <= 0) continue;
+        //it's alive!
         ctx.globalAlpha = opacity;
         ctx.fillStyle = color;
         ctx.beginPath();
