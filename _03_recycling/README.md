@@ -14,4 +14,68 @@
 
 ### 01 - Reduce, reuse
 
-1. 
+1. In <code>particles.js</code>, change one setting:
+    ```js
+    const respawn = true;
+    ```
+    This is temporary, just for testing
+2. Add a new function in the "setup" section:
+    ```js
+    function resetParticle(p) {
+        const { x, y, vx, vy, r, opacity, color, life } = getParticle();
+        p.x = x;
+        p.y = y;
+        p.vx = vx;
+        p.vy = vy;
+        p.r = r;
+        p.opacity = opacity;
+        p.color = color;
+        p.life = life;
+    }
+    ```
+    This seems very similar to the <code>getParticle</code> function, but it assigns (or, rather, _reassigns_) values to an existing particle instead of creating a new object from nothing. Bring up _garbage collection_ in JavaScript or basic memory management, if students are ready
+3. The <code>update</code> function has changed:
+    ```js
+    export function update({ width, height }) {
+        for (let p of particles) {
+            //not alive? needs respawning?
+            if (p.life <= 0) {
+                if (respawn) resetParticle(p);
+                continue;
+            }
+            //move and accelerate, change opacity, life
+            p.x += p.vx;
+            p.y += p.vy;
+            p.vx *= acceleration;
+            p.vy *= acceleration;
+            p.opacity *= acceleration;
+            p.life--;
+        }
+    }
+    ```
+    * Note that the destructured <code>{ width, height }</code> parameters are still present despite not being used here. Other particle systems based off this file might need them, so it's not _terrible_ that it's still there. As always, optimization is needed for any final product
+    * The <code>for</code> loop is now a <code>for...of</code> loop for better declarative code (and overall faster than a higher-order loop like <code>forEach</code>, for example). This is because there's no need to replace a particle in the array with a new one; changing properties on an existing one is sufficient. Review passing by reference, if necessary
+    * The check on the <code>life</code> property happens at the top of the loop, before any updating, and particles that are not alive are ignored. And, if the <code>respawn</code> setting is <code>true</code>, then the new <code>resetParticle</code> function is called, passing in the current particle
+    * Review <code>continue</code> in loops, if necessary
+4. There's also a life check in the <code>draw</code> function:
+    ```js
+    export function draw(ctx) {
+        ctx.save();
+        for (let { x, y, r, opacity, color, life } of particles) {
+            //not alive?
+            if (life <= 0) continue;
+            //it's alive!
+            ctx.globalAlpha = opacity;
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(x, y, r, 0, TWO_PI);
+            ctx.fill();
+        }
+        ctx.restore();
+    }
+    ```
+    No need to draw particles that have expired. Point out, though, that if the <code>respawn</code> setting is <code>true</code>, then expired particles are immediately given new properties, including <code>life</code>
+5. Running the code at this time brings back the continuous bursting of particles, but particle objects are being reused instead of being overwritten with a new one with every click. This is good for memory management, but it still doesn't solve the issue of vanishing existing particles when the emitter changes position
+
+### 02 - Jump in the pool
+

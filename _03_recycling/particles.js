@@ -55,13 +55,10 @@ export function setEmitter({ x, y }) {
 
 //loop functions
 export function update({ width, height }) {
-    //update particles
-    // for (let i=0; i<particles.length; i++) {
-    //     let p = particles[i];
     for (let p of particles) {
-        //needs respawning?
+        //not alive? needs respawning?
         if (p.life <= 0) {
-            if (respawn) resetParticle(p); //particles[i] = getParticle();
+            if (respawn) resetParticle(p);
             continue;
         }
         //move and accelerate, change opacity, life
@@ -77,7 +74,7 @@ export function update({ width, height }) {
 export function draw(ctx) {
     ctx.save();
     for (let { x, y, r, opacity, color, life } of particles) {
-        //is no longer live?
+        //not alive?
         if (life <= 0) continue;
         //it's alive!
         ctx.globalAlpha = opacity;
