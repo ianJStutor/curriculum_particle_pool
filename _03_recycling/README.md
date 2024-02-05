@@ -144,13 +144,13 @@
     * Then, if <code>respawn</code> setting is <code>true</code>, the <code>resetParticle</code> function is called
     * This new system allows the <code>particles</code> array to expand as needed, but particles beyond the needed pool of <code>numParticles</code> particle objects are discarded once they're expired
 
-### 04 - Even more efficiency handling
+### 04 - Even more better
 
 1. In <code>particles.js</code>, flip the <code>respawn</code> setting yet one more time:
     ```js
     const respawn = false;
     ```
-2. Now there's a new issue. When <code>respawn</code> is set to <code>false</code> and either there's no set emitter or all particles have expired, the code is still working. Both the <code>update</code> and <code>draw</code> functions are iterating through the <code>particles</code> array every animation frame, even when unnecessary. There should be a way to let the caller know that there are no more live particles in the system so that neither the <code>update</code> nor <code>draw</code> need be called
+2. Now there's a new issue. When <code>respawn</code> is set to <code>false</code> and either there's no emitter set or all particles have expired, the code is still chugging away as if there are particles to handle. Both the <code>update</code> and <code>draw</code> functions are iterating through the <code>particles</code> array every animation frame, even when unnecessary. There should be a way to let the caller know that there are no more live particles in the system so that neither the <code>update</code> nor <code>draw</code> need to be called
 3. In <code>particles.js</code>, create a new section called "exported state functions" and move the <code>setEmitter</code> function to it
 4. In the new "exported state functions" section, add a new function:
     ```js
@@ -161,7 +161,7 @@
         return false;
     }
     ```
-    This function should quickly return a boolean value representing whether or not any particles in the <code>particles</code> array are still live. And the <code>hasLifeParticle</code> function is exported, so it's available to the caller in the <code>index.js</code> module
+    This function should quickly return a boolean value representing whether or not any particle objects in the <code>particles</code> array are still live. And the <code>hasLifeParticle</code> function is exported, so it's available to the caller in the <code>index.js</code> module
 5. In <code>index.js</code>, add <code>hasLiveParticle</code> to the exports from <code>particle.js</code>:
     ```js
     import { update, draw, setEmitter, hasLiveParticle } from "./particles.js";
@@ -182,4 +182,30 @@
     }
     ```
     Point out that the <code>hasLiveParticle</code> function is called every animation frame, and only if it returns <code>true</code> are the "erase" and "particles" sections called. No need to erase or redraw anything if there's nothing there
-7. Note that 
+7. Point out that the <code>respawn</code> setting has been flipped many times throughout development. This is necessary for thorough testing, but are there situations that might require changing it while the system is running? It might be valuable to make the particle system a bit more robust by changing <code>respawn</code> from a setting to a state variable:
+    ```js
+    //state variables
+    const particles = [];
+    const emitter = { x: undefined, y: undefined };
+    let respawn = false;
+    ```
+    Point out that if <code>respawn</code> can change it can no longer be considered a constant, thus the change from declaring it with <code>const</code> to <code>let</code>. (Using <code>var</code> here would have an identical effect.)
+8. The default value for <code>respawn</code> is currently <code>false</code>, but we want the caller to be able to change it. We need a new function in the "exported state functions" section:
+    ```js
+    export function setRespawn(bool = true) {
+        respawn = bool;
+    }
+    ```
+    This gives the caller the ability to toggle the coninuous state of the particle system, if ever needed
+9. Feel free to test changing <code>respawn</code> on your own, but the easiest way is in the <code>index.js</code> file, 
+    a. Import the <code>setRespawn</code> function
+    b. Add a <code>respawn</code> variable to the "environment" section set to <code>true</code>
+    c. In the <code>init</code> function, change the click event listener to the following:
+        ```js
+        canvas.addEventListener("click", e => {
+            setRespawn(respawn);
+            respawn = !respawn;
+            setEmitter({ x: e.x, y: e.y });
+        });
+        ```
+    d. Now run the code and each click toggles the particle system's <code>respawn</code> state

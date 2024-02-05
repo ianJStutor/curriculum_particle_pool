@@ -1,6 +1,6 @@
 //dependencies
 import { fullscreenCanvas } from "./fullscreenCanvas.js";
-import { update, draw, setEmitter, hasLiveParticle } from "./particles.js";
+import { update, draw, setEmitter, hasLiveParticle, setRespawn } from "./particles.js";
 
 //environment
 const canvas = document.querySelector("canvas");

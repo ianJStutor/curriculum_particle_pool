@@ -12,11 +12,11 @@ const opacity = 1;
 const minLife = 75;
 const maxLife = 125;
 const color = "white";
-const respawn = true;
 
 //state variables
 const particles = [];
 const emitter = { x: undefined, y: undefined };
+let respawn = false;
 
 //setup
 function setupParticles() {
@@ -68,6 +68,10 @@ export function hasLiveParticle() {
         if (p.life > 0) return true;
     }
     return false;
+}
+
+export function setRespawn(bool = true) {
+    respawn = bool;
 }
 
 //loop functions
