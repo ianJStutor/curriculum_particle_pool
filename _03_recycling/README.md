@@ -54,7 +54,6 @@
     }
     ```
     * Note that the destructured <code>{ width, height }</code> parameters are still present despite not being used here. Other particle systems based off this file might need them, so it's not _terrible_ that it's still there. As always, optimization is needed for any final product
-    * The <code>for</code> loop is now a <code>for...of</code> loop for better declarative code (and overall faster than a higher-order loop like <code>forEach</code>, for example). This is because there's no need to replace a particle in the array with a new one; changing properties on an existing one is sufficient. Review passing by reference, if necessary
     * The check on the <code>life</code> property happens at the top of the loop, before any updating, and particles that are not alive are ignored. And, if the <code>respawn</code> setting is <code>true</code>, then the new <code>resetParticle</code> function is called, passing in the current particle
     * Review <code>continue</code> in loops, if necessary
 4. There's also a life check in the <code>draw</code> function:
@@ -107,3 +106,80 @@
     * Note that, yes, the <code>Array.find</code> function is more declarative, but higher-order functions can be significantly slower on some platforms
     * As soon as an expired particle is found, the function ends by returning it. The loop doesn't keep going. Only if there are no particles at all or all particles are still live will this function return <code>null</code>
 4. Running the code at this time solves the previous problem of disappearing particles! Every click seemingly produces a new set of particles bursting from the emitter
+
+### 03 - Respawn trouble
+
+1. In <code>particles.js</code>, flip the <code>respawn</code> setting once again:
+    ```js
+    const respawn = true;
+    ```
+2. Running the code at this time should reveal the problem with removing the limit on the number of particles. Clicking several times rapidly adds to the <code>particles</code> array and _every one of them will respawn!_. This eventually slows down the system
+3. We still want the effect of clicking several times and not destroying the existing live particles, so the <code>update</code> function needs to change:
+    ```js
+    export function update({ width, height }) {
+        //update particles
+        for (let i=0; i<particles.length; i++) {
+            let p = particles[i];
+            //not alive? needs removing or respawning?
+            if (p.life <= 0) {
+                if (particles.length > numParticles) {
+                    particles.splice(i, 1);
+                    i--;
+                }
+                else if (respawn) resetParticle(p);
+                continue;
+            }
+            //move and accelerate, change opacity, life
+            p.x += p.vx;
+            p.y += p.vy;
+            p.vx *= acceleration;
+            p.vy *= acceleration;
+            p.opacity *= acceleration;
+            p.life--;
+        }
+    }
+    ```
+    * The "not alive? needs removing or respawning?" section has new functionality. If the <code>particles</code> array is too long, then the current particle object is spliced out of the array instead of respawning. It was a temporary particle used to accommodate rapid clicks but is no longer needed
+    * Point out that the index value needs to decrement (<code>i--</code>) after splicing or the next particle will be skipped
+    * Then, if <code>respawn</code> setting is <code>true</code>, the <code>resetParticle</code> function is called
+    * This new system allows the <code>particles</code> array to expand as needed, but particles beyond the needed pool of <code>numParticles</code> particle objects are discarded once they're expired
+
+### 04 - Even more efficiency handling
+
+1. In <code>particles.js</code>, flip the <code>respawn</code> setting yet one more time:
+    ```js
+    const respawn = false;
+    ```
+2. Now there's a new issue. When <code>respawn</code> is set to <code>false</code> and either there's no set emitter or all particles have expired, the code is still working. Both the <code>update</code> and <code>draw</code> functions are iterating through the <code>particles</code> array every animation frame, even when unnecessary. There should be a way to let the caller know that there are no more live particles in the system so that neither the <code>update</code> nor <code>draw</code> need be called
+3. In <code>particles.js</code>, create a new section called "exported state functions" and move the <code>setEmitter</code> function to it
+4. In the new "exported state functions" section, add a new function:
+    ```js
+    export function hasLiveParticle() {
+        for (let p of particles) {
+            if (p.life > 0) return true;
+        }
+        return false;
+    }
+    ```
+    This function should quickly return a boolean value representing whether or not any particles in the <code>particles</code> array are still live. And the <code>hasLifeParticle</code> function is exported, so it's available to the caller in the <code>index.js</code> module
+5. In <code>index.js</code>, add <code>hasLiveParticle</code> to the exports from <code>particle.js</code>:
+    ```js
+    import { update, draw, setEmitter, hasLiveParticle } from "./particles.js";
+    ```
+6. The <code>loop</code> function has changed a bit:
+    ```js
+    function loop(t) {
+        if (hasLiveParticle()) {
+            //erase
+            const { width, height } = canvas;
+            ctx.clearRect(0, 0, width, height);
+            //particles
+            update(canvas);
+            draw(ctx);
+        }
+        //repeat
+        requestAnimationFrame(loop);
+    }
+    ```
+    Point out that the <code>hasLiveParticle</code> function is called every animation frame, and only if it returns <code>true</code> are the "erase" and "particles" sections called. No need to erase or redraw anything if there's nothing there
+7. Note that 

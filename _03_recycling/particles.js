@@ -12,9 +12,9 @@ const opacity = 1;
 const minLife = 75;
 const maxLife = 125;
 const color = "white";
-const respawn = false;
+const respawn = true;
 
-//state
+//state variables
 const particles = [];
 const emitter = { x: undefined, y: undefined };
 
@@ -56,18 +56,32 @@ function resetParticle(p) {
     p.life = life;
 }
 
+//exported state functions
 export function setEmitter({ x, y }) {
     emitter.x = x;
     emitter.y = y;
     setupParticles();
 }
 
+export function hasLiveParticle() {
+    for (let p of particles) {
+        if (p.life > 0) return true;
+    }
+    return false;
+}
+
 //loop functions
 export function update({ width, height }) {
-    for (let p of particles) {
-        //not alive? needs respawning?
+    //update particles
+    for (let i=0; i<particles.length; i++) {
+        let p = particles[i];
+        //not alive? needs removing or respawning?
         if (p.life <= 0) {
-            if (respawn) resetParticle(p);
+            if (particles.length > numParticles) {
+                particles.splice(i, 1);
+                i--;
+            }
+            else if (respawn) resetParticle(p);
             continue;
         }
         //move and accelerate, change opacity, life
