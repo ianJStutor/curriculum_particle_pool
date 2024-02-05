@@ -79,3 +79,31 @@
 
 ### 02 - Jump in the pool
 
+1. In <code>particles.js</code>, return the <code>respawn</code> setting to <code>false</code>:
+    ```js
+    const respawn = false;
+    ```
+2. The <code>setupParticles</code> function has been rewritten:
+    ```js
+    function setupParticles() {
+        for (let i=0; i<numParticles; i++) {
+            let p = getParticleFromPool();
+            if (p) resetParticle(p);
+            else particles.push(getParticle());
+        }
+    }
+    ```
+    * Instead of assigning a particle to an index of the <code>particles</code> array, we're using the <code>push</code> method. And we're doing this as many times as the value of the <code>numParticles</code> setting. Point out that this means that <code>particles.length</code> can surpass the <code>numParticles</code> setting; it's no longer a limit but more like a count of how many particles need to spawn with each click
+    * If a particle already exists but is no longer live, then that particle is reset, effectively reusing particles already created
+3. Finding an expired particle from the pool requires a new function in the "setup" section:
+    ```js
+    function getParticleFromPool() {
+        for (let p of particles) {
+            if (p.life <= 0) return p;
+        }
+        return null;
+    }
+    ```
+    * Note that, yes, the <code>Array.find</code> function is more declarative, but higher-order functions can be significantly slower on some platforms
+    * As soon as an expired particle is found, the function ends by returning it. The loop doesn't keep going. Only if there are no particles at all or all particles are still live will this function return <code>null</code>
+4. Running the code at this time solves the previous problem of disappearing particles! Every click seemingly produces a new set of particles bursting from the emitter

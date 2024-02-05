@@ -12,7 +12,7 @@ const opacity = 1;
 const minLife = 75;
 const maxLife = 125;
 const color = "white";
-const respawn = true;
+const respawn = false;
 
 //state
 const particles = [];
@@ -21,8 +21,17 @@ const emitter = { x: undefined, y: undefined };
 //setup
 function setupParticles() {
     for (let i=0; i<numParticles; i++) {
-        particles[i] = getParticle();
+        let p = getParticleFromPool();
+        if (p) resetParticle(p);
+        else particles.push(getParticle());
     }
+}
+
+function getParticleFromPool() {
+    for (let p of particles) {
+        if (p.life <= 0) return p;
+    }
+    return null;
 }
 
 function getParticle() {
