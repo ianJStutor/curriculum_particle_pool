@@ -12,7 +12,7 @@ function loop(t) {
     const { width, height } = canvas;
     ctx.clearRect(0, 0, width, height);
     //particles
-    update(canvas);
+    update();
     draw(ctx);
     //repeat
     requestAnimationFrame(loop);

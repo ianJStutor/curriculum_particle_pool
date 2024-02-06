@@ -36,7 +36,7 @@
     This seems very similar to the <code>getParticle</code> function, but it assigns (or, rather, _reassigns_) values to an existing particle instead of creating a new object from nothing. Bring up _garbage collection_ in JavaScript or basic memory management, if students are ready
 3. The <code>update</code> function has changed:
     ```js
-    export function update({ width, height }) {
+    export function update(dt = 1) {
         for (let p of particles) {
             //not alive? needs respawning?
             if (p.life <= 0) {
@@ -44,16 +44,15 @@
                 continue;
             }
             //move and accelerate, change opacity, life
-            p.x += p.vx;
-            p.y += p.vy;
-            p.vx *= acceleration;
-            p.vy *= acceleration;
-            p.opacity *= acceleration;
+            p.x += p.vx * dt;
+            p.y += p.vy * dt;
+            p.vx *= acceleration * dt;
+            p.vy *= acceleration * dt;
+            p.opacity *= acceleration * dt;
             p.life--;
         }
     }
     ```
-    * Note that the destructured <code>{ width, height }</code> parameters are still present despite not being used here. Other particle systems based off this file might need them, so it's not _terrible_ that it's still there. As always, optimization is needed for any final product
     * The check on the <code>life</code> property happens at the top of the loop, before any updating, and particles that are not alive are ignored. And, if the <code>respawn</code> setting is <code>true</code>, then the new <code>resetParticle</code> function is called, passing in the current particle
     * Review <code>continue</code> in loops, if necessary
 4. There's also a life check in the <code>draw</code> function:
@@ -116,7 +115,7 @@
 2. Running the code at this time should reveal the problem with removing the limit on the number of particles. Clicking several times rapidly adds to the <code>particles</code> array and _every one of them will respawn!_. This eventually slows down the system
 3. We still want the effect of clicking several times and not destroying the existing live particles, so the <code>update</code> function needs to change:
     ```js
-    export function update({ width, height }) {
+    export function update(dt = 1) {
         //update particles
         for (let i=0; i<particles.length; i++) {
             let p = particles[i];
@@ -130,11 +129,11 @@
                 continue;
             }
             //move and accelerate, change opacity, life
-            p.x += p.vx;
-            p.y += p.vy;
-            p.vx *= acceleration;
-            p.vy *= acceleration;
-            p.opacity *= acceleration;
+            p.x += p.vx * dt;
+            p.y += p.vy * dt;
+            p.vx *= acceleration * dt;
+            p.vy *= acceleration * dt;
+            p.opacity *= acceleration * dt;
             p.life--;
         }
     }

@@ -75,7 +75,7 @@ export function setRespawn(bool = true) {
 }
 
 //loop functions
-export function update({ width, height }) {
+export function update(dt = 1) {
     //update particles
     for (let i=0; i<particles.length; i++) {
         let p = particles[i];
@@ -89,11 +89,11 @@ export function update({ width, height }) {
             continue;
         }
         //move and accelerate, change opacity, life
-        p.x += p.vx;
-        p.y += p.vy;
-        p.vx *= acceleration;
-        p.vy *= acceleration;
-        p.opacity *= acceleration;
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+        p.vx *= acceleration * dt;
+        p.vy *= acceleration * dt;
+        p.opacity *= acceleration * dt;
         p.life--;
     }
 }
