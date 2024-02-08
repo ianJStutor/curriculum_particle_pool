@@ -7,7 +7,7 @@ const minRadius = 1;
 const maxRadius = 5;
 const minSpeed = 0.1;
 const maxSpeed = 3;
-const minAngularChange = 0.05;
+const minAngularChange = -0.1;
 const maxAngularChange = 0.1;
 const acceleration = 0.98;
 const opacity = 1;
@@ -39,7 +39,6 @@ function getParticleFromPool() {
 function getParticle() {
     const angle = lerp(0, TWO_PI, Math.random());
     const speed = lerp(minSpeed, maxSpeed, Math.random());
-    // const { x: vx, y: vy } = polarToCartesian({ a: angle, v: speed });
     const { x, y } = emitter;
     const r = lerp(minRadius, maxRadius, Math.random());
     const life = Math.round(lerp(minLife, maxLife, Math.random()));
@@ -48,11 +47,11 @@ function getParticle() {
 }
 
 function resetParticle(p) {
-    const { x, y, vx, vy, r, opacity, color, life } = getParticle();
+    const { x, y, angle, angularChange, r, opacity, color, life } = getParticle();
     p.x = x;
     p.y = y;
-    p.vx = vx;
-    p.vy = vy;
+    p.angle = angle;
+    p.angularChange = angularChange;
     p.r = r;
     p.opacity = opacity;
     p.color = color;
@@ -91,14 +90,13 @@ export function update(dt = 1) {
             else if (respawn) resetParticle(p);
             continue;
         }
-        //move and accelerate, change opacity, life
+        //move and accelerate, change angle, life
         const { x: vx, y: vy } = polarToCartesian({ a: p.angle, v: p.speed });
         p.x += vx * dt;
         p.y += vy * dt;
         p.angle += p.angularChange;
         p.vx *= acceleration * dt;
         p.vy *= acceleration * dt;
-        // p.opacity *= acceleration * dt;
         p.life--;
     }
 }
