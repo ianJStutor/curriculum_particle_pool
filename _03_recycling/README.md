@@ -168,19 +168,24 @@
 6. The <code>loop</code> function has changed a bit:
     ```js
     function loop(t) {
+        //time
+        if (!prevTime) prevTime = t;
+        const dt = (t - prevTime) / fps;
+        prevTime = t;
+        //management
         if (hasLiveParticle()) {
             //erase
             const { width, height } = canvas;
             ctx.clearRect(0, 0, width, height);
             //particles
-            update(canvas);
+            update(dt);
             draw(ctx);
         }
         //repeat
         requestAnimationFrame(loop);
     }
     ```
-    Point out that the <code>hasLiveParticle</code> function is called every animation frame, and only if it returns <code>true</code> are the "erase" and "particles" sections called. No need to erase or redraw anything if there's nothing there
+    Point out that in the new "management" section, the <code>hasLiveParticle</code> function is called every animation frame, and only if it returns <code>true</code> are the "erase" and "particles" sections called. No need to erase or redraw anything if there's nothing there
 7. Point out that the <code>respawn</code> setting has been flipped many times throughout development. This is necessary for thorough testing, but are there situations that might require changing it while the system is running? It might be valuable to make the particle system a bit more robust by changing <code>respawn</code> from a setting to a state variable:
     ```js
     //state variables

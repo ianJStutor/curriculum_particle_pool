@@ -109,22 +109,37 @@
 
 ### 03 - Delta time
 
-1. Last management task is to prepare for a future improvement: FPS. In an effort to keep smooth animations, a new value is needed to balance slow or fast processors and create a somewhat uniform experience.
-2. In <code>index.js</code>, change the <code>loop</code> function:
+1. Last management task is to manage FPS. In an effort to keep smooth animations, a new value is needed to balance slow or fast processors and create a somewhat uniform experience.
+2. In <code>index.js</code>, add two new sections, each with its own new variable:
+    ```js
+    //settings
+    const fps = 1000/60; //target 60 frames per second
+
+    //state variables
+    let prevTime;
+    ```
+    * If 60 frames per second is too much or too little for a particular project or processor, feel free to change this value
+    * The <code>prevTime</code> variable will be given a new value every animation frame
+3. Change the <code>loop</code> function:
     ```js
     function loop(t) {
+        //time
+        if (!prevTime) prevTime = t;
+        const dt = (t - prevTime) / fps;
+        prevTime = t;
         //erase
         const { width, height } = canvas;
         ctx.clearRect(0, 0, width, height);
         //particles
-        update();
+        update(dt);
         draw(ctx);
         //repeat
         requestAnimationFrame(loop);
     }
     ```
-    Point out that the only change is that <code>canvas</code> is no longer sent as an argument to the <code>update()</code> call. Eventually, a delta time value will be sent, but that's for a later lesson
-3. In <code>particles.js</code>, change the <code>update</code> function:
+    * Point out that <code>canvas</code> is no longer sent as an argument to the <code>update()</code> call, replaced by the <code>dt</code> value
+    * The delta time, or <code>dt</code>, is the elapsed milliseconds since the previous animation frame divided by the expected duration of each animation frame. This becomes a normalized value for which <code>1</code> is perfectly synched with the expected fps, lower values are faster than expected, and larger values are slower than expected
+4. In <code>particles.js</code>, change the <code>update</code> function:
     ```js
     export function update(dt = 1) {
         //update particles
@@ -147,5 +162,5 @@
     ```
     * Point out that the unused <code>{ width, height }</code> destructured parameters have been removed
     * Instead, there's a <code>dt</code> parameter, which stands for _delta time_. It's a normalized value that represents how close the current animation frame matched the expected frames per second. The default of <code>1</code> means that the animation was perfectly synched with the expected FPS, and normal Euler integration can proceed. A value less than one means the animation frame is happening faster than expected, so the particle movement should be reduced by the same amount. A value greater than one means the animation frame is happening slower than expected, so the particle movement should be increased by the same amount
-    * The <code>dt</code> argument isn't yet sent with the call to <code>update</code>, so the default <code>1</code> for now will always be used
-4. Running the code at this time should display no visual difference. Implementing a delta time will pay off in a future lesson
+    * Review default arguments, if necessary
+5. Running the code at this time should display no visual difference, but the synchopation of the animation should be consistent among fast/slow processors and fast/slow monitor refresh rates

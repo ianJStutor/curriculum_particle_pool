@@ -42,7 +42,7 @@ export function setEmitter({ x, y }) {
 }
 
 //loop functions
-export function update(dt = 1) {console.log(dt);
+export function update(dt = 1) {
     //update particles
     for (let i=0; i<particles.length; i++) {
         let p = particles[i];
