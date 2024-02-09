@@ -202,9 +202,9 @@
     ```
     This gives the caller the ability to toggle the coninuous state of the particle system, if ever needed
 9. Feel free to test changing <code>respawn</code> on your own, but the easiest way is in the <code>index.js</code> file, 
-    a. Import the <code>setRespawn</code> function
-    b. Add a <code>respawn</code> variable to the "environment" section set to <code>true</code>
-    c. In the <code>init</code> function, change the click event listener to the following:
+    1. Import the <code>setRespawn</code> function
+    2. Add a <code>respawn</code> variable to the "environment" section set to <code>true</code>
+    3. In the <code>init</code> function, change the click event listener to the following:
         ```js
         canvas.addEventListener("click", e => {
             setRespawn(respawn);
@@ -212,4 +212,4 @@
             setEmitter({ x: e.x, y: e.y });
         });
         ```
-    d. Now run the code and each click toggles the particle system's <code>respawn</code> state
+    4. Now run the code and each click toggles the particle system's <code>respawn</code> state
