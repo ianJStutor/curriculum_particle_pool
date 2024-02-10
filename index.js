@@ -14,16 +14,26 @@ canvases.forEach(c => {
     contexts.push(c.getContext("2d"));
 });
 
+//settings
+const fps = 1000/60; //target 60 frames per second
+
+//state variables
+let prevTime;
+
 //loop
 function loop(t) {
+    //time
+    if (!prevTime) prevTime = t;
+    const dt = (t - prevTime) / fps;
+    prevTime = t;
     //erase
     contexts.forEach(ctx => ctx.clearRect(0, 0, width, height));
     //particles
-    particlesUpdate();
+    particlesUpdate(dt);
     particlesDraw(contexts[0]);
-    polkaUpdate();
+    polkaUpdate(dt);
     polkaDraw(contexts[1]);
-    swirlUpdate();
+    swirlUpdate(dt);
     swirlDraw(contexts[2]);
     //repeat
     requestAnimationFrame(loop);
